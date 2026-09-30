@@ -2,25 +2,34 @@
 
 High-performance flat-memory quilt substrate: the draft architecture
 (**struct compilation → memory register specs → bare-metal execution**)
-built, tested, and benchmarked across **five runtimes** with identical
-semantics — naive dict Python, flat-array Python, numpy, C `-O3`, and Mojo
-1.2.0-dev with whole-cell SIMD register I/O.
+built, tested, and benchmarked across **eight runtimes** with identical
+semantics — naive dict Python, flat-array Python (AoS), **SoA Python**,
+numpy, C `-O3` (AoS + SoA), and Mojo 1.2.0-dev (AoS whole-cell SIMD +
+**SoA lane-vectorized flow pass**).
 
 The governing discipline of this repo: **measure first, document second.**
 Every performance claim in `docs/RESULTS.md` comes from the harness in this
 repo, and every divergence from the original draft (API archaeology included)
 is receipted in `docs/MOJO-NOTES.md`.
 
+Headline (wave-69, measured): the SoA re-layout restores unit-stride access
+and enables a genuinely lane-vectorized flow pass — **1.29B cells/s at 512²
+on Mojo SoA, 4.33x its own AoS build and 2.55x the C-SoA kernel**, passing
+the pre-registered "SoA ≥ 2x at 512²" prediction.
+
 ## Layout
 
 ```
-mojo/quilt_high_perf.mojo    the compiling Mojo substrate (1.2.0-dev)
+mojo/quilt_high_perf.mojo    the compiling Mojo substrate (1.2.0-dev, AoS)
+mojo/quilt_soa.mojo          the SoA substrate: unit-stride + lane-vectorized interior
 mojo/original_draft.mojo     the original draft, preserved verbatim (reference)
 python/naive_quilt.py        dict-of-dicts baseline ("standard Python loop")
 python/flat_quilt.py         the draft's layout in Python (array('f'), AoS 4-slot)
+python/soa_quilt.py          the wave-69 SoA re-layout in Python (4 field arrays)
 python/vec_quilt.py          numpy whole-grid vectorization
-python/cflat.py + c/         compiled C kernel (gcc -O3) + ctypes bridge
-python/bench.py              correctness gate + best-of-3 benchmark
+python/cflat.py + c/         compiled C kernel (gcc -O3) + ctypes bridge (AoS)
+python/csoa.py               ctypes bridge to the C SoA kernel (c/soa_quilt.c)
+python/bench.py              correctness gate + best-of-3 benchmark (8 runtimes)
 python/test_correctness.py   cross-runtime agreement + substrate properties
 python/interface_probe.py    C-ABI export: raw block -> .bin/.npy/header
 docs/RESULTS.md              measured numbers and honest verdicts

@@ -46,6 +46,19 @@ point at `<env>/share/max` or the compiler reports `unable to locate module
   the fleet already receipted in wave 67 (L9): **verify bytes before filing
   defects.**
 
+## Wave-69 additions (quilt_soa.mojo)
+
+- `alias` is removed **at function scope too** (wave-68 pinned only the
+  file-scope removal): `alias W = 8` inside a `def` is a parse error
+  ("use of unknown declaration 'alias'"). Spell lane widths as literals.
+- `SIMD.max(other)` **method is gone** on this nightly
+  (`'SIMD[.float32, 8]' value has no attribute 'max'`). The free function
+  `max(a, b)` is elementwise over SIMD and prelude-resolved (same quirk as
+  `Pointer`/`alloc`: needs at least one `from std import ...` line).
+- Positional `ptr[i]` now emits deprecation warnings everywhere
+  ("use `unsafe_offset=` instead") — kept for readability parity with the
+  AoS substrate; harmless, revisit if the positional form is removed.
+
 ## Honest engineering deltas vs the draft (beyond API fixes)
 
 1. **Snapshot buffer allocated once** in `__init__`, not per flow pass (the

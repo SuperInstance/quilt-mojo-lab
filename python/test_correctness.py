@@ -12,8 +12,10 @@ sys.path.insert(0, _HERE)
 
 from naive_quilt import NaiveQuilt  # noqa: E402
 from flat_quilt import FlatQuilt  # noqa: E402
+from soa_quilt import SoaQuilt  # noqa: E402
 from vec_quilt import VecQuilt  # noqa: E402
 import cflat  # noqa: E402
+import csoa  # noqa: E402
 
 SIZE = 12
 STEPS = 4
@@ -25,12 +27,17 @@ def make_all():
     impls = {
         "naive": NaiveQuilt(SIZE),
         "flat": FlatQuilt(SIZE),
+        "soa": SoaQuilt(SIZE),
         "vec": VecQuilt(SIZE),
     }
     try:
         impls["c"] = cflat.CFlatQuilt(SIZE)
     except RuntimeError:
         pass  # C baseline optional in CI without gcc
+    try:
+        impls["csoa"] = csoa.CSoaQuilt(SIZE)
+    except RuntimeError:
+        pass
     for impl in impls.values():
         for r, c, p in INJECTIONS:
             impl.inject_force(r, c, p)
@@ -96,10 +103,14 @@ def test_outbound_only_total_is_non_increasing():
         # re-run fresh with per-step totals
         fresh = {
             "naive": NaiveQuilt(SIZE), "flat": FlatQuilt(SIZE),
-            "vec": VecQuilt(SIZE),
+            "soa": SoaQuilt(SIZE), "vec": VecQuilt(SIZE),
         }
         try:
             fresh["c"] = cflat.CFlatQuilt(SIZE)
+        except RuntimeError:
+            pass
+        try:
+            fresh["csoa"] = csoa.CSoaQuilt(SIZE)
         except RuntimeError:
             pass
         f = fresh[name]
@@ -143,6 +154,31 @@ def test_flat_block_interface_shape():
     blob = impl.raw_bytes()
     assert len(blob) == 4 * 4 * 4 * 4  # cells * slots * sizeof(f32)
     assert all(b == 0 for b in blob[4:]) or True  # resistance slots are 0.4
+
+
+def test_soa_layout_is_four_separate_fields():
+    impl = SoaQuilt(4)
+    assert len(impl.pot) == 16 and len(impl.res) == 16
+    blob = impl.raw_bytes()
+    assert len(blob) == 4 * 4 * 4 * 4  # cells * fields * sizeof(f32)
+    impl.inject_force(2, 2, 3.0)
+    impl.step_entropy()
+    assert abs(impl.entropy(2, 2) - 0.57) <= TOL
+
+
+def test_csoa_matches_python_soa():
+    try:
+        c_impl = csoa.CSoaQuilt(SIZE)
+    except RuntimeError:
+        pytest.skip("C SoA kernel not built")
+    py = SoaQuilt(SIZE)
+    for impl in (c_impl, py):
+        for r, c, p in INJECTIONS:
+            impl.inject_force(r, c, p)
+        impl.run(STEPS)
+    for r in range(SIZE):
+        for c in range(SIZE):
+            assert abs(c_impl.potential(r, c) - py.potential(r, c)) <= TOL
 
 
 def test_c_matches_python_flat():
