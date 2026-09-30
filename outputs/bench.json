@@ -1,0 +1,116 @@
+{
+ "gate": {
+  "naive": "OK",
+  "vec": "OK",
+  "c": "OK",
+  "mojo": "OK"
+ },
+ "table": [
+  {
+   "size": 16,
+   "steps": 10,
+   "cells": 256,
+   "naive": 2583664,
+   "naive_cells_per_s": 990841.0,
+   "flat": 1203766,
+   "flat_cells_per_s": 2126659.0,
+   "vec": 247899,
+   "vec_cells_per_s": 10326786.0,
+   "c": 13620,
+   "c_cells_per_s": 187958884.0,
+   "mojo_flow": 6382.0,
+   "mojo_total": 6599.0,
+   "mojo_cells_per_s": 387937566.0
+  },
+  {
+   "size": 32,
+   "steps": 10,
+   "cells": 1024,
+   "naive": 10493534,
+   "naive_cells_per_s": 975839.0,
+   "flat": 5748459,
+   "flat_cells_per_s": 1781347.0,
+   "vec": 368307,
+   "vec_cells_per_s": 27802893.0,
+   "c": 29426,
+   "c_cells_per_s": 347991572.0,
+   "mojo_flow": 25187.0,
+   "mojo_total": 25789.0,
+   "mojo_cells_per_s": 397068518.0
+  },
+  {
+   "size": 64,
+   "steps": 10,
+   "cells": 4096,
+   "naive": 42278681,
+   "naive_cells_per_s": 968810.0,
+   "flat": 23916547,
+   "flat_cells_per_s": 1712622.0,
+   "vec": 538291,
+   "vec_cells_per_s": 76092671.0,
+   "c": 88557,
+   "c_cells_per_s": 462526960.0,
+   "mojo_flow": 98501.0,
+   "mojo_total": 100695.0,
+   "mojo_cells_per_s": 406772928.0
+  },
+  {
+   "size": 128,
+   "steps": 10,
+   "cells": 16384,
+   "flat": 97102601,
+   "flat_cells_per_s": 1687287.0,
+   "vec": 1358844,
+   "vec_cells_per_s": 120573075.0,
+   "c": 313196,
+   "c_cells_per_s": 523122901.0,
+   "mojo_flow": 433698.0,
+   "mojo_total": 442193.0,
+   "mojo_cells_per_s": 370516946.0
+  },
+  {
+   "size": 256,
+   "steps": 10,
+   "cells": 65536,
+   "flat": 387769906,
+   "flat_cells_per_s": 1690074.0,
+   "vec": 5306662,
+   "vec_cells_per_s": 123497596.0,
+   "c": 1272804,
+   "c_cells_per_s": 514894673.0,
+   "mojo_flow": 1566128.0,
+   "mojo_total": 1604815.0,
+   "mojo_cells_per_s": 408371058.0
+  },
+  {
+   "size": 512,
+   "steps": 10,
+   "cells": 262144,
+   "flat": 1696400814,
+   "flat_cells_per_s": 1545295.0,
+   "vec": 27617287,
+   "vec_cells_per_s": 94920258.0,
+   "c": 7102969,
+   "c_cells_per_s": 369062571.0,
+   "mojo_flow": 10839529.0,
+   "mojo_total": 11112345.0,
+   "mojo_cells_per_s": 235903403.0
+  }
+ ],
+ "meta": {
+  "steps": 10,
+  "repeat": 3,
+  "inject": [
+   [
+    1,
+    1,
+    4.8
+   ]
+  ],
+  "threshold": 0.6,
+  "timing": "best_of_n; python=perf_counter_ns; mojo=internal std.time.perf_counter_ns",
+  "machine": {
+   "cores": 2
+  }
+ }
+}
