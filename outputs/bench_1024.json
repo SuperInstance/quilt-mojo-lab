@@ -28,9 +28,9 @@
  "registered_check": {
   "prediction": "C-SoA per-cell flow throughput at 1024^2 stays within 2x of its in-session 512^2 value: csoa(1024)/csoa(512) >= 0.5 (pre-registered in python/bench_1024.py docstring, p=0.55, BEFORE measurement)",
   "registered_before_measurement": true,
-  "csoa_512_cells_per_s": 518278048.0,
-  "csoa_1024_cells_per_s": 486358009.0,
-  "ratio_1024_over_512": 0.9384,
+  "csoa_512_cells_per_s": 704860977.0,
+  "csoa_1024_cells_per_s": 527596054.0,
+  "ratio_1024_over_512": 0.7485,
   "verdict": "PASS"
  },
  "table": [
@@ -39,14 +39,14 @@
    "steps": 10,
    "cells": 262144,
    "self_rss_kb_after": {
-    "naive": 213236,
-    "flat": 213236,
-    "soa": 213236,
-    "vec": 213236,
-    "c": 213236,
-    "csoa": 213236,
-    "mojo": 213236,
-    "mojo_soa": 213236
+    "naive": 209380,
+    "flat": 209380,
+    "soa": 209380,
+    "vec": 209380,
+    "c": 209380,
+    "csoa": 209380,
+    "mojo": 209380,
+    "mojo_soa": 209380
    },
    "checksums": {
     "naive": 0.40000000272436415,
@@ -64,40 +64,40 @@
     "c": 2.9802322387695312e-08,
     "csoa": 2.9802322387695312e-08
    },
-   "naive": 3741445849,
-   "naive_cells_per_s": 700649.0,
-   "flat": 1683440843,
-   "flat_cells_per_s": 1557192.0,
-   "soa": 1302319595,
-   "soa_cells_per_s": 2012901.0,
-   "vec": 27033230,
-   "vec_cells_per_s": 96971024.0,
-   "c": 7789414,
-   "c_cells_per_s": 336538795.0,
-   "csoa": 5057980,
-   "csoa_cells_per_s": 518278048.0,
-   "mojo_flow": 7861087.0,
-   "mojo_total": 8038845.0,
-   "mojo_flow_cells_per_s": 333470422.0,
-   "mojo_cells_per_s": 326096597.0,
-   "mojo_soa_flow": 1654428.0,
-   "mojo_soa_total": 1786835.0,
-   "mojo_soa_flow_cells_per_s": 1584499295.0,
-   "mojo_soa_cells_per_s": 1467085657.0
+   "naive": 3280736516,
+   "naive_cells_per_s": 799040.0,
+   "flat": 925433928,
+   "flat_cells_per_s": 2832660.0,
+   "soa": 612579290,
+   "soa_cells_per_s": 4279348.0,
+   "vec": 15697343,
+   "vec_cells_per_s": 166998963.0,
+   "c": 4382038,
+   "c_cells_per_s": 598223931.0,
+   "csoa": 3719088,
+   "csoa_cells_per_s": 704860977.0,
+   "mojo_flow": 5472935.0,
+   "mojo_total": 5620826.0,
+   "mojo_flow_cells_per_s": 478982484.0,
+   "mojo_cells_per_s": 466379852.0,
+   "mojo_soa_flow": 973022.0,
+   "mojo_soa_total": 1048034.0,
+   "mojo_soa_flow_cells_per_s": 2694122024.0,
+   "mojo_soa_cells_per_s": 2501292897.0
   },
   {
    "size": 1024,
    "steps": 10,
    "cells": 1048576,
    "self_rss_kb_after": {
-    "naive": 775400,
-    "flat": 775400,
-    "soa": 775400,
-    "vec": 775400,
-    "c": 775400,
-    "csoa": 775400,
-    "mojo": 775400,
-    "mojo_soa": 775400
+    "naive": 770420,
+    "flat": 770420,
+    "soa": 770420,
+    "vec": 770420,
+    "c": 770420,
+    "csoa": 770420,
+    "mojo": 770420,
+    "mojo_soa": 770420
    },
    "checksums": {
     "naive": 0.40000000272436415,
@@ -115,31 +115,31 @@
     "c": 2.9802322387695312e-08,
     "csoa": 2.9802322387695312e-08
    },
-   "naive": 17726015643,
-   "naive_cells_per_s": 591546.0,
-   "flat": 6933172079,
-   "flat_cells_per_s": 1512404.0,
-   "soa": 5328426904,
-   "soa_cells_per_s": 1967890.0,
-   "vec": 127357912,
-   "vec_cells_per_s": 82333008.0,
-   "c": 33070829,
-   "c_cells_per_s": 317069766.0,
-   "csoa": 21559756,
-   "csoa_cells_per_s": 486358009.0,
-   "mojo_flow": 37837575.0,
-   "mojo_total": 38634828.0,
-   "mojo_flow_cells_per_s": 277125582.0,
-   "mojo_cells_per_s": 271406928.0,
-   "mojo_soa_flow": 9196166.0,
-   "mojo_soa_total": 9730505.0,
-   "mojo_soa_flow_cells_per_s": 1140231701.0,
-   "mojo_soa_cells_per_s": 1077617246.0
+   "naive": 15546342302,
+   "naive_cells_per_s": 674484.0,
+   "flat": 3685355106,
+   "flat_cells_per_s": 2845251.0,
+   "soa": 2747387833,
+   "soa_cells_per_s": 3816629.0,
+   "vec": 103512360,
+   "vec_cells_per_s": 101299594.0,
+   "c": 27083405,
+   "c_cells_per_s": 387165499.0,
+   "csoa": 19874599,
+   "csoa_cells_per_s": 527596054.0,
+   "mojo_flow": 31567781.0,
+   "mojo_total": 32358638.0,
+   "mojo_flow_cells_per_s": 332166521.0,
+   "mojo_cells_per_s": 324048249.0,
+   "mojo_soa_flow": 5647455.0,
+   "mojo_soa_total": 6131141.0,
+   "mojo_soa_flow_cells_per_s": 1856723073.0,
+   "mojo_soa_cells_per_s": 1710246103.0
   }
  ],
  "peak_rss_kb": {
-  "self": 775400,
-  "children": 775400
+  "self": 770420,
+  "children": 770420
  },
  "meta": {
   "steps": 10,
@@ -154,10 +154,10 @@
   "threshold": 0.6,
   "timing": "best_of_n; python=perf_counter_ns; mojo=internal std.time.perf_counter_ns; flow passes only; mojo flow column is FLOW_NS-based (total-based also recorded)",
   "machine": {
-   "cores": 2
+   "cores": 24
   },
   "mojo_available": true,
-  "wall_seconds": 154.8,
+  "wall_seconds": 149.6,
   "prediction_registered_in": "python/bench_1024.py docstring (pre-run)"
  }
 }
