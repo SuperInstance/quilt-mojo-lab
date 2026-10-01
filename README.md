@@ -17,6 +17,13 @@ and enables a genuinely lane-vectorized flow pass — **1.29B cells/s at 512²
 on Mojo SoA, 4.33x its own AoS build and 2.55x the C-SoA kernel**, passing
 the pre-registered "SoA ≥ 2x at 512²" prediction.
 
+Headline (wave-72, measured): the SoA substrate scales through 1024² —
+**1.14B cells/s at 1024² on Mojo SoA (2.34x C-SoA at the same size)**, with
+C-SoA holding 94% of its per-cell throughput across the 512→1024 doubling
+(pre-registered "within 2x" check: PASS) — and the interface layer ships a
+four-block SoA v2 container (magic/version/dtype/offsets/sha256-per-block)
+with byte-exact roundtrip against the AoS dump.
+
 ## Layout
 
 ```
@@ -30,8 +37,11 @@ python/vec_quilt.py          numpy whole-grid vectorization
 python/cflat.py + c/         compiled C kernel (gcc -O3) + ctypes bridge (AoS)
 python/csoa.py               ctypes bridge to the C SoA kernel (c/soa_quilt.c)
 python/bench.py              correctness gate + best-of-3 benchmark (8 runtimes)
-python/test_correctness.py   cross-runtime agreement + substrate properties
-python/interface_probe.py    C-ABI export: raw block -> .bin/.npy/header
+python/bench_1024.py         wave-72 scale test: all 8 runtimes at 1024² + registered check
+python/test_correctness.py   cross-runtime agreement + substrate properties (15 tests)
+python/interface_probe.py    C-ABI export v1: raw interleaved block -> .bin/.npy/header
+python/export_soa.py         C-ABI export v2: four SoA blocks + JSON header (wave-72)
+c/export_soa.c               v2 container writer: de/interleave + sha256 (gcc -O3)
 docs/RESULTS.md              measured numbers and honest verdicts
 docs/MOJO-NOTES.md           24.x -> 1.2.0-dev API archaeology
 outputs/                     bench.json, exported memory blocks (receipts)
@@ -52,9 +62,11 @@ outputs/                     bench.json, exported memory blocks (receipts)
 
 ```sh
 sh c/build.sh
-python -m pytest python/test_correctness.py -q          # 9 tests
+python -m pytest python/test_correctness.py -q          # 15 tests
 python python/bench.py                                   # gate + benchmark
-python python/interface_probe.py                         # C-ABI export
+python python/bench_1024.py                              # wave-72 1024² scale test
+python python/interface_probe.py                         # C-ABI export v1 (AoS block)
+python python/export_soa.py                              # C-ABI export v2 (four blocks)
 # Mojo (nightly): see docs/MOJO-NOTES.md for the toolchain env
 mojo run mojo/quilt_high_perf.mojo 64 10 demo
 ```
@@ -75,6 +87,11 @@ mojo run mojo/quilt_high_perf.mojo 64 10 demo
 
 - v0.1.0: five runtimes, 9/9 correctness, full scaling curve to 512², C-ABI
   export, CI (Python + Mojo jobs + key-scan gate).
-- Registered future work: SoA layout for unit-stride flow reads (the 512²
-  cache cliff), GPU backend claim testing (needs hardware), multicomponent
-  quilts (routing/filter/projection kernels beyond the leaky flow).
+- v0.2.0 (wave-69): SoA re-layout across the stack, registered prediction
+  PASS (4.33x own-AoS at 512²), 8 runtimes, 11/11 tests.
+- wave-72: 1024² scale test (all 8 runtimes incl. naive; registered
+  cache-scaling check PASS at ratio 0.94; peak RSS receipted) + four-block
+  C-ABI interface v2 with tamper-evident JSON header, 15/15 tests.
+- Registered future work: GPU backend claim testing (needs hardware),
+  multicomponent quilts (routing/filter/projection kernels beyond the leaky
+  flow).

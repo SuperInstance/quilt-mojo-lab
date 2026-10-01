@@ -46,6 +46,17 @@ point at `<env>/share/max` or the compiler reports `unable to locate module
   the fleet already receipted in wave 67 (L9): **verify bytes before filing
   defects.**
 
+## Wave-72 additions (toolchain environment)
+
+- `pixi` itself is NOT on PATH in this container; the wave-69 toolchain
+  persists at `~/.pixi/envs/mojo` (`mojo` 1.2.0.dev2026093005 verified
+  runnable). Run it with `MODULAR_HOME=$HOME/.pixi/envs/mojo/share/max` and
+  `PATH=$HOME/.pixi/envs/mojo/bin:$PATH`.
+- PATH-shadowing gotcha: prepending `~/.pixi/envs/mojo/bin` puts the conda
+  env's python (no numpy) in front of the venv python. Invoke the benchmark
+  driver by absolute path (e.g. `/home/z/.venv/bin/python3 python/bench_1024.py`)
+  or export the mojo PATH only for the mojo subprocess.
+
 ## Wave-69 additions (quilt_soa.mojo)
 
 - `alias` is removed **at function scope too** (wave-68 pinned only the

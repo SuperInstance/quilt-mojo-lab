@@ -4,8 +4,103 @@ Machine: 2-core container, no GPU. Timings: best of 3; Python via
 `time.perf_counter_ns`, Mojo via internal `std.time.perf_counter_ns`
 (runtime startup excluded). Workload: flow passes only for the flow timing
 column; `mojo(total)` = flow + whole-cell SIMD entropy pass. Identical
-semantics verified across runtimes by `python/test_correctness.py` (11/11 as
-of v0.2.0) and the checksum gate in `python/bench.py`.
+semantics verified across runtimes by `python/test_correctness.py` (15/15 as
+of wave-72) and the checksum gate in `python/bench.py`.
+
+## Wave-72: 1024² scale test + four-block interface v2 — measured 2026-10-01
+
+Toolchain re-verified BEFORE any measurement: the wave-69 Mojo nightly
+(`Mojo 1.2.0.dev2026093005`, installed via pixi under `~/.pixi/envs/mojo`,
+`MODULAR_HOME=$HOME/.pixi/envs/mojo/share/max`) still compiles and runs both
+substrates today — **Mojo was available this wave**; no number below is
+estimated or carried over. One environment gotcha receipted for the next
+porter: prepending `~/.pixi/envs/mojo/bin` to PATH shadows the venv `python3`
+with the conda env's python — invoke the benchmark python by absolute path.
+
+### The 1024² scale test (`python/bench_1024.py`)
+
+All eight runtimes at 1024², same protocol as wave-69 (best of 3, flow passes
+only, correctness gate FIRST). Gate: 16² checksum agreement, 8/8 runtimes OK;
+at 1024² every runtime agrees with the flat reference to max|Δpot| ≤ 3.0e-08
+(soa: 0.0 exactly), checksums 0.400000006 ± 3e-8. New at 1024²: the naive
+dict runtime is included (the v0.1.0 tables dropped it past 64²) and peak RSS
+is recorded (`resource.getrusage`: 757 MB high-water, driven by the 1M-dict
+naive row; compiled runtimes stay in the tens of MB).
+
+Flow-only cells/sec (best of 3; mojo columns FLOW_NS-based):
+
+| grid | naive | flat | soa | vec | c | csoa | mojo (AoS) | mojo SoA |
+|---|---|---|---|---|---|---|---|---|
+| 512x512 (in-session ref) | 700,649 | 1,557,192 | 2,012,901 | 96.97M | 336.54M | 518.28M | 333.47M | 1,584.50M |
+| **1024x1024** | 591,546 | 1,512,404 | 1,967,890 | 82.33M | 317.07M | **486.36M** | 277.13M | **1,140.23M** |
+| 1024/512 ratio | 0.84 | 0.97 | 0.98 | 0.85 | 0.94 | 0.94 | 0.83 | 0.72 |
+
+Registered prediction (written into the `bench_1024.py` docstring BEFORE
+measurement, p=0.55): **"C-SoA per-cell flow throughput at 1024² stays within
+2x of its in-session 512² value: csoa(1024)/csoa(512) ≥ 0.5"** — the SoA
+working set at 1024² is pot+snap+res ≈ 12 MB, and wave-69 measured SoA
+cliffing ~10% per grid doubling vs the AoS 23-25% cliff.
+
+**Verdict: PASS** — measured ratio 0.938 (486.36M vs 518.28M cells/s), a 6%
+cliff, nowhere near the 0.5 bar. SoA's graceful cache scaling extends one more
+doubling; the registered wave-69 conclusion ("it was the layout, not the
+language") is stable at 1024².
+
+Honest side observations (not registered, recorded):
+
+1. Mojo SoA at 1024² sustains **1,140M cells/s = 2.34x C-SoA** (486M) — the
+   wave-69 superiority verdict holds at the new scale (wave-69 measured 2.55x
+   at 512²).
+2. Mojo SoA degrades the MOST of the compiled runtimes across 512→1024
+   (ratio 0.72) — the 3-snapshot working set (pot+snap+res at 4 MB each, plus
+   the lane-vectorized interior touching all three) is starting to feel
+   capacity pressure. Its absolute lead is intact.
+3. Session-to-session variance is real on this 2-core container: wave-69
+   measured mojo-SoA 1,295M and c-SoA 507M at 512²; this session 1,584M and
+   518M on identical code and protocol (best-of-3 absorbs scheduler noise
+   only partially). Cross-WAVE comparisons should trust ratios over absolutes;
+   cross-RUNTIME comparisons within a session are solid.
+4. The dict naive loop loses further ground at 1024² (0.84 ratio): ~1,970x
+   behind Mojo SoA per cell.
+
+### Four-block C-ABI interface v2 (`c/export_soa.c` + `python/export_soa.py`)
+
+v1 (wave-68's `interface_probe.py`, kept + receipts preserved) streamed ONE
+interleaved AoS block. v2 dumps the substrate as **FOUR separate flat blocks**
+— one per field (potential/resistance/entropy/split), structure-of-arrays,
+the layout the SoA kernels already run in memory — inside a self-describing
+container:
+
+```
+offset 0      magic "QS2" + 0x00 (4 bytes)
+offset 4      uint32 header_len, little-endian (authoritative)
+offset 8      header_len bytes UTF-8 JSON (space-padded): magic, version=2,
+              grid, cells, dtype="float32-le", fields, block_size_bytes,
+              header_len, data_offset, blocks[4] = {field, offset, sha256}
+8+header_len  block 0..3, each cells*4 bytes, field order
+```
+
+C side (`gcc -O3`): `qml_soa_deinterleave`/`qml_soa_interleave` (AoS dump ↔
+four blocks), `qml_soa_export` (renders the JSON header by fixed-point pass
+— data_offset depends on header_len depends on JSON length — hashes each
+block with an in-tree FIPS 180-4 sha256, writes the container in one call;
+no JSON parser needed by the writer). Python bridge: `export_v2` (from four
+field buffers or one AoS dump), `read_v2`/`read_v2_bytes` (structural
+validation + hashlib re-hash of every block = C-writer/Python-reader
+agreement), `to_aos` (v2 → v1 byte-exact).
+
+Verified (4 new pytest tests, suite now 15/15; demo receipt
+`outputs/interface/quilt_soa_v2_256.qbin` + `_header.json`, v1 receipts kept):
+
+- export a 256² grid → re-import: **field-identical** (all four fields,
+  `np.array_equal`), and the four blocks are **byte-identical to the
+  strided slices of the AoS dump**;
+- C sha256 == hashlib sha256 per block; flipping one block byte or the magic
+  is caught (tamper evidence);
+- v2 → v1 interleave roundtrip is byte-exact;
+- the AoS-sourced and SoA-runtime-sourced export paths produce the same
+  container layout (content differs only by the receipted f32
+  cross-runtime noise between C-f32 and Python-f64→f32 arithmetic).
 
 ## Wave-69: the SoA re-layout — measured 2026-10-01
 

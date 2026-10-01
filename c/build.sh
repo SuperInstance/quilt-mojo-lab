@@ -4,4 +4,5 @@ set -e
 cd "$(dirname "$0")"
 gcc -O3 -fPIC -shared -o libflatquilt.so flat_quilt.c -lm
 gcc -O3 -fPIC -shared -o libsoaquilt.so soa_quilt.c -lm
-echo "built c/libflatquilt.so c/libsoaquilt.so"
+gcc -O3 -fPIC -shared -o libexportsoa.so export_soa.c -lm
+echo "built c/libflatquilt.so c/libsoaquilt.so c/libexportsoa.so"

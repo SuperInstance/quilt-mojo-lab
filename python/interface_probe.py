@@ -4,6 +4,12 @@ This is the minimal "interface layer" the high-performance architecture
 promises: the substrate's memory is already one contiguous C-compatible
 block, so export is a single copy-free view (numpy) or a byte dump.
 
+wave-72: this v1 exporter is kept as the historical AoS interface (its
+receipts below are preserved verbatim). The four-block SoA interface v2 —
+four flat blocks, one per field, with a JSON header (magic/version/grid/
+dtype/offsets/sha256-per-block) — lives in python/export_soa.py +
+c/export_soa.c.
+
 Outputs (outputs/):
   quilt_state_16.bin   raw 4-float-per-cell block (C ABI: float32[cells*4])
   quilt_state_16.npy   the same block as a (cells, 4) float32 array

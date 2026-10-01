@@ -1,0 +1,39 @@
+{
+ "magic": "QS2",
+ "version": 2,
+ "grid": 256,
+ "cells": 65536,
+ "dtype": "float32-le",
+ "byte_order": "little",
+ "fields": [
+  "potential",
+  "resistance",
+  "entropy",
+  "split"
+ ],
+ "block_size_bytes": 262144,
+ "header_len": 716,
+ "data_offset": 724,
+ "blocks": [
+  {
+   "field": "potential",
+   "offset": 724,
+   "sha256": "6c43cd8a24b4f5ed833dde89c271000c4b18f7ae51c912e1815b5ee049b39960"
+  },
+  {
+   "field": "resistance",
+   "offset": 262868,
+   "sha256": "adcf274f0fe7ac9a4b969de627286454e9f0fa5478fdcf6124b0680109e0a79e"
+  },
+  {
+   "field": "entropy",
+   "offset": 525012,
+   "sha256": "5fc63ec82cad172537fd8c8f2e61e645e2b026ea4469c975d27f689467e1e7c7"
+  },
+  {
+   "field": "split",
+   "offset": 787156,
+   "sha256": "8a39d2abd3999ab73c34db2476849cddf303ce389b35826850f9a700589b4a90"
+  }
+ ]
+}

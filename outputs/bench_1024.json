@@ -1,0 +1,163 @@
+{
+ "gate_16": {
+  "flat": "OK (reference)",
+  "naive": "OK",
+  "soa": "OK",
+  "vec": "OK",
+  "c": "OK",
+  "csoa": "OK",
+  "mojo": "OK",
+  "mojo_soa": "OK"
+ },
+ "gate_ref_checksum": 0.4000000059604645,
+ "checksum_agreement_top": {
+  "size": 1024,
+  "ref": 0.4000000059604645,
+  "tolerance": 0.0001,
+  "ok": {
+   "naive": true,
+   "flat": true,
+   "soa": true,
+   "vec": true,
+   "c": true,
+   "csoa": true,
+   "mojo": true,
+   "mojo_soa": true
+  }
+ },
+ "registered_check": {
+  "prediction": "C-SoA per-cell flow throughput at 1024^2 stays within 2x of its in-session 512^2 value: csoa(1024)/csoa(512) >= 0.5 (pre-registered in python/bench_1024.py docstring, p=0.55, BEFORE measurement)",
+  "registered_before_measurement": true,
+  "csoa_512_cells_per_s": 518278048.0,
+  "csoa_1024_cells_per_s": 486358009.0,
+  "ratio_1024_over_512": 0.9384,
+  "verdict": "PASS"
+ },
+ "table": [
+  {
+   "size": 512,
+   "steps": 10,
+   "cells": 262144,
+   "self_rss_kb_after": {
+    "naive": 213236,
+    "flat": 213236,
+    "soa": 213236,
+    "vec": 213236,
+    "c": 213236,
+    "csoa": 213236,
+    "mojo": 213236,
+    "mojo_soa": 213236
+   },
+   "checksums": {
+    "naive": 0.40000000272436415,
+    "flat": 0.4000000059604645,
+    "soa": 0.4000000059604645,
+    "vec": 0.40000003576278687,
+    "c": 0.40000003576278687,
+    "csoa": 0.40000003576278687,
+    "mojo": 0.4000000059604645,
+    "mojo_soa": 0.4000000059604645
+   },
+   "maxdiff_vs_flat": {
+    "soa": 0.0,
+    "vec": 2.9802322387695312e-08,
+    "c": 2.9802322387695312e-08,
+    "csoa": 2.9802322387695312e-08
+   },
+   "naive": 3741445849,
+   "naive_cells_per_s": 700649.0,
+   "flat": 1683440843,
+   "flat_cells_per_s": 1557192.0,
+   "soa": 1302319595,
+   "soa_cells_per_s": 2012901.0,
+   "vec": 27033230,
+   "vec_cells_per_s": 96971024.0,
+   "c": 7789414,
+   "c_cells_per_s": 336538795.0,
+   "csoa": 5057980,
+   "csoa_cells_per_s": 518278048.0,
+   "mojo_flow": 7861087.0,
+   "mojo_total": 8038845.0,
+   "mojo_flow_cells_per_s": 333470422.0,
+   "mojo_cells_per_s": 326096597.0,
+   "mojo_soa_flow": 1654428.0,
+   "mojo_soa_total": 1786835.0,
+   "mojo_soa_flow_cells_per_s": 1584499295.0,
+   "mojo_soa_cells_per_s": 1467085657.0
+  },
+  {
+   "size": 1024,
+   "steps": 10,
+   "cells": 1048576,
+   "self_rss_kb_after": {
+    "naive": 775400,
+    "flat": 775400,
+    "soa": 775400,
+    "vec": 775400,
+    "c": 775400,
+    "csoa": 775400,
+    "mojo": 775400,
+    "mojo_soa": 775400
+   },
+   "checksums": {
+    "naive": 0.40000000272436415,
+    "flat": 0.4000000059604645,
+    "soa": 0.4000000059604645,
+    "vec": 0.40000003576278687,
+    "c": 0.40000003576278687,
+    "csoa": 0.40000003576278687,
+    "mojo": 0.4000000059604645,
+    "mojo_soa": 0.4000000059604645
+   },
+   "maxdiff_vs_flat": {
+    "soa": 0.0,
+    "vec": 2.9802322387695312e-08,
+    "c": 2.9802322387695312e-08,
+    "csoa": 2.9802322387695312e-08
+   },
+   "naive": 17726015643,
+   "naive_cells_per_s": 591546.0,
+   "flat": 6933172079,
+   "flat_cells_per_s": 1512404.0,
+   "soa": 5328426904,
+   "soa_cells_per_s": 1967890.0,
+   "vec": 127357912,
+   "vec_cells_per_s": 82333008.0,
+   "c": 33070829,
+   "c_cells_per_s": 317069766.0,
+   "csoa": 21559756,
+   "csoa_cells_per_s": 486358009.0,
+   "mojo_flow": 37837575.0,
+   "mojo_total": 38634828.0,
+   "mojo_flow_cells_per_s": 277125582.0,
+   "mojo_cells_per_s": 271406928.0,
+   "mojo_soa_flow": 9196166.0,
+   "mojo_soa_total": 9730505.0,
+   "mojo_soa_flow_cells_per_s": 1140231701.0,
+   "mojo_soa_cells_per_s": 1077617246.0
+  }
+ ],
+ "peak_rss_kb": {
+  "self": 775400,
+  "children": 775400
+ },
+ "meta": {
+  "steps": 10,
+  "repeat": 3,
+  "inject": [
+   [
+    1,
+    1,
+    4.8
+   ]
+  ],
+  "threshold": 0.6,
+  "timing": "best_of_n; python=perf_counter_ns; mojo=internal std.time.perf_counter_ns; flow passes only; mojo flow column is FLOW_NS-based (total-based also recorded)",
+  "machine": {
+   "cores": 2
+  },
+  "mojo_available": true,
+  "wall_seconds": 154.8,
+  "prediction_registered_in": "python/bench_1024.py docstring (pre-run)"
+ }
+}
