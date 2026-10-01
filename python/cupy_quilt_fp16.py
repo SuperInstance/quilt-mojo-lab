@@ -193,7 +193,7 @@ def main():
         "pre_registered": "docs/RUNTIME10-FP16-PREREG.md",
     }
     with open("outputs/runtime10_fp16_curves.json", "w") as fh:
-        json.dump(result, fh, indent=2)
+        json.dump(result, fh, indent=2, default=float)
     print(json.dumps({"P2_ratio": round(ratio, 3), "bf16": _bf16_kernel is not None},
                      indent=2))
 
@@ -202,8 +202,10 @@ if __name__ == "__main__":
     try:
         main()
     except Exception:
-        with open("outputs/runtime10_fp16_curves.json", "w") as fh:
+        kill_path = "outputs/runtime10_fp16_curves.harness-invalid-%d.json" % int(time.time())
+        with open(kill_path, "w") as fh:
             json.dump({"experiment": "runtime10_fp16_precision_budget",
+                       "kill_receipt": kill_path,
                        "verdict": "KILL-harness",
                        "error": traceback.format_exc(),
                        "python": sys.executable}, fh, indent=2)
