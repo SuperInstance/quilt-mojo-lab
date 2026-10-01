@@ -30,6 +30,10 @@ from soa_quilt import SoaQuilt  # noqa: E402
 from vec_quilt import VecQuilt  # noqa: E402
 import cflat  # noqa: E402
 import csoa  # noqa: E402
+try:
+    import cupy_quilt  # noqa: E402
+except ImportError:
+    cupy_quilt = None
 
 MOJO = os.environ.get("MOJO_BIN", "mojo")
 MOJO_ENV = dict(os.environ)
@@ -55,12 +59,33 @@ def make(kind, size):
         return cflat.CFlatQuilt(size, THRESHOLD)
     if kind == "csoa":
         return csoa.CSoaQuilt(size, THRESHOLD)
+    if kind == "cupy":
+        if cupy_quilt is None:
+            raise RuntimeError("cupy runtime unavailable (no cupy/CUDA)")
+        return cupy_quilt.CupySoaQuilt(size, THRESHOLD)
     raise ValueError(kind)
 
 
 def bench_python(kind, size, steps):
     best = None
     checksum = None
+    _sync = getattr(make(kind, size), "flow_sync", None)
+    if _sync is not None:
+        # Wave-73 instrument law (bisected: outputs/runtime9_dvfs_diag.py +
+        # RESULTS.md wave-73). After >= ~10s of GPU idleness this box can
+        # service short bursts 2-10x slow; the state SURVIVES further short
+        # bursts; only SUSTAINED synced load ramps it back (0.6s verified).
+        # Ramp on a throwaway instance; timed instances still run exactly
+        # inject -> steps flows.
+        w = make(kind, size)
+        for r, c, p in INJECT:
+            w.inject_force(r, c, p)
+        _t0 = time.perf_counter()
+        while time.perf_counter() - _t0 < 0.6:
+            for _ in range(20):
+                w.step_flow()
+            _sync()
+        del w
     for _ in range(REPEAT):
         q = make(kind, size)
         for r, c, p in INJECT:
@@ -68,6 +93,9 @@ def bench_python(kind, size, steps):
         t0 = time.perf_counter_ns()
         for _ in range(steps):
             q.step_flow()
+        _sync_end = getattr(q, "flow_sync", None)
+        if _sync_end is not None:
+            _sync_end()  # async GPU kernels must land inside the timed window
         t1 = time.perf_counter_ns()
         q.step_entropy()
         best = (t1 - t0) if best is None else min(best, t1 - t0)
@@ -116,7 +144,7 @@ def main():
     ref.run(steps)
     ref_cs = ref.checksum()
     gate = {}
-    for kind in ("naive", "vec", "c", "soa", "csoa"):
+    for kind in ("naive", "vec", "c", "soa", "csoa", "cupy"):
         try:
             q = make(kind, 16)
         except RuntimeError:
@@ -140,7 +168,7 @@ def main():
     table = []
     for size in sizes:
         row = {"size": size, "steps": steps, "cells": size * size}
-        for kind in ("naive", "flat", "soa", "vec", "c", "csoa"):
+        for kind in ("naive", "flat", "soa", "vec", "c", "csoa", "cupy"):
             if kind == "naive" and size > 64:
                 continue
             try:
@@ -161,8 +189,8 @@ def main():
             row["mojo_soa_cells_per_s"] = round(size * size * steps / (st_ / 1e9), 0)
         table.append(row)
 
-    print("\n| grid | naive | flat | soa | vec | c | csoa | mojo | mojo_soa |")
-    print("|---|---|---|---|---|---|---|---|---|")
+    print("\n| grid | naive | flat | soa | vec | c | csoa | cupy | mojo | mojo_soa |")
+    print("|---|---|---|---|---|---|---|---|---|---|")
     for r in table:
         def fmt(v):
             return f"{v/1e6:.2f}ms" if v else "—"
@@ -173,7 +201,7 @@ def main():
     print("\nflow-only cells/sec (best of 3):")
     for r in table:
         parts = []
-        for k in ("naive", "flat", "soa", "vec", "c", "csoa"):
+        for k in ("naive", "flat", "soa", "vec", "c", "csoa", "cupy"):
             v = r.get(k + "_cells_per_s")
             if v:
                 parts.append(f"{k}={v:,.0f}")
@@ -191,8 +219,17 @@ def main():
     if top.get("mojo_flow") and top.get("mojo_soa_flow"):
         check["mojo_ratio"] = round(top["mojo_flow"] / top["mojo_soa_flow"], 3)
     ratios = [v for k, v in check.items() if k.endswith("_ratio")]
-    check["registered"] = ("PASS" if any(v >= 2.0 for v in ratios)
-                           else "FAIL") if ratios else "n/a"
+    if not ratios:
+        check["registered"] = "n/a (no runtime pair measured)"
+    elif "mojo_ratio" not in check and check.get("c_ratio", 0) < 2.0:
+        # Wave-73 honesty note: the wave-69 PASS was always carried by the
+        # Mojo pair (4.75x at 512^2). With --no-mojo the C-only basis has
+        # never crossed 2x in any recorded session (1.52-1.53 at 1024^2 in
+        # both wave-72 and wave-73) — record that basis explicitly instead
+        # of printing a bare FAIL.
+        check["registered"] = f"FAIL (c-only basis {check['c_ratio']}; mojo pair absent — wave-69 PASS was mojo-carried)"
+    else:
+        check["registered"] = "PASS" if any(v >= 2.0 for v in ratios) else "FAIL"
     check["prediction"] = "SoA >= 2x AoS flow at 512^2 (registered p=0.45)"
     print(f"\nregistered wave-69 check @ {top['size']}x{top['size']} "
           f"(flow-only): {check}")

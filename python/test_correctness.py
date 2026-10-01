@@ -22,6 +22,10 @@ from vec_quilt import VecQuilt  # noqa: E402
 import cflat  # noqa: E402
 import csoa  # noqa: E402
 import export_soa  # noqa: E402
+try:
+    import cupy_quilt  # noqa: E402
+except ImportError:
+    cupy_quilt = None
 
 SIZE = 12
 STEPS = 4
@@ -44,6 +48,8 @@ def make_all():
         impls["csoa"] = csoa.CSoaQuilt(SIZE)
     except RuntimeError:
         pass
+    if cupy_quilt is not None:
+        impls["cupy"] = cupy_quilt.CupySoaQuilt(SIZE)
     for impl in impls.values():
         for r, c, p in INJECTIONS:
             impl.inject_force(r, c, p)
@@ -119,6 +125,8 @@ def test_outbound_only_total_is_non_increasing():
             fresh["csoa"] = csoa.CSoaQuilt(SIZE)
         except RuntimeError:
             pass
+        if cupy_quilt is not None:
+            fresh["cupy"] = cupy_quilt.CupySoaQuilt(SIZE)
         f = fresh[name]
         for r, c, p in INJECTIONS:
             f.inject_force(r, c, p)

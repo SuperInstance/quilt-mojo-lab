@@ -1,0 +1,86 @@
+{
+ "gate": {
+  "naive": "OK",
+  "vec": "OK",
+  "c": "OK",
+  "soa": "OK",
+  "csoa": "OK",
+  "cupy": "OK"
+ },
+ "registered_check": {
+  "c_ratio": 1.474,
+  "registered": "FAIL (c-only basis 1.474; mojo pair absent \u2014 wave-69 PASS was mojo-carried)",
+  "prediction": "SoA >= 2x AoS flow at 512^2 (registered p=0.45)"
+ },
+ "table": [
+  {
+   "size": 16,
+   "steps": 10,
+   "cells": 256,
+   "naive": 860370,
+   "naive_cells_per_s": 2975464.0,
+   "flat": 475280,
+   "flat_cells_per_s": 5386299.0,
+   "soa": 362106,
+   "soa_cells_per_s": 7069753.0,
+   "vec": 149383,
+   "vec_cells_per_s": 17137158.0,
+   "c": 7164,
+   "c_cells_per_s": 357342267.0,
+   "csoa": 7774,
+   "csoa_cells_per_s": 329302804.0,
+   "cupy": 169752,
+   "cupy_cells_per_s": 15080824.0
+  },
+  {
+   "size": 512,
+   "steps": 10,
+   "cells": 262144,
+   "flat": 558778172,
+   "flat_cells_per_s": 4691379.0,
+   "soa": 424517087,
+   "soa_cells_per_s": 6175111.0,
+   "vec": 10944688,
+   "vec_cells_per_s": 239517106.0,
+   "c": 3307875,
+   "c_cells_per_s": 792484601.0,
+   "csoa": 2854446,
+   "csoa_cells_per_s": 918370850.0,
+   "cupy": 1192709,
+   "cupy_cells_per_s": 2197887330.0
+  },
+  {
+   "size": 1024,
+   "steps": 10,
+   "cells": 1048576,
+   "flat": 2368651472,
+   "flat_cells_per_s": 4426890.0,
+   "soa": 1778945076,
+   "soa_cells_per_s": 5894370.0,
+   "vec": 75654066,
+   "vec_cells_per_s": 138601407.0,
+   "c": 19417092,
+   "c_cells_per_s": 540027312.0,
+   "csoa": 13170782,
+   "csoa_cells_per_s": 796137997.0,
+   "cupy": 38401629,
+   "cupy_cells_per_s": 273055083.0
+  }
+ ],
+ "meta": {
+  "steps": 10,
+  "repeat": 3,
+  "inject": [
+   [
+    1,
+    1,
+    4.8
+   ]
+  ],
+  "threshold": 0.6,
+  "timing": "best_of_n; python=perf_counter_ns; mojo=internal std.time.perf_counter_ns; flow passes only",
+  "machine": {
+   "cores": 24
+  }
+ }
+}

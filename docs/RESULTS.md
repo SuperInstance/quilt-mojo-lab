@@ -1,11 +1,75 @@
 # RESULTS — measured, not promised
 
-Machine: 2-core container, no GPU. Timings: best of 3; Python via
+Machine: 2-core container + RTX 4050 6GB (GPU runtimes from wave-73; read
+the wave-73 burst-timing law before benchmarking GPU on this box). Timings:
+best of 3; Python via
 `time.perf_counter_ns`, Mojo via internal `std.time.perf_counter_ns`
 (runtime startup excluded). Workload: flow passes only for the flow timing
 column; `mojo(total)` = flow + whole-cell SIMD entropy pass. Identical
 semantics verified across runtimes by `python/test_correctness.py` (15/15 as
 of wave-72) and the checksum gate in `python/bench.py`.
+
+## Wave-73: runtime #9 — GPU-native CuPy substrate + the WSL2 GPU burst-timing law — measured 2026-10-01
+
+Pre-reg: `docs/RUNTIME9-PREREG.md` (pushed before fire). Runtime #9 =
+`python/cupy_quilt.py` — the SoA substrate as two CUDA RawKernels (one
+thread per cell, South/North/East/West op order; double intermediates with
+ONE float32 store per pass; compiled `-fmad=false`; checksum accumulated
+host-side in the oracle's sequential float64 order).
+
+### P1 — bit-parity: PASS, stronger than frozen
+
+- pytest 15/15 with cupy in the cross-runtime suite.
+- Exact parity vs the Python canon: |Δchecksum| = 0.0 and max|Δpot| = 0.0
+  at 16², 512² AND 1024² (10 steps, the bench injection set). The frozen
+  claim was "0.0 at 16², within 1e-4 at 512²" — measured 0.0 everywhere.
+- Design that did it: replicate the oracle's float64-promoting reads in
+  the kernel (double math), and `-fmad=false` so FMA contraction cannot
+  skip the oracle's explicit intermediate roundings.
+
+### P2 — performance: FAIL in-bench ×2 → instrument fault diagnosed → PASS
+
+- In-bench best-of-3 wall-clock: 512² = 2.20G cells/s (2.4× C-SoA) but
+  1024² = 272-273M — 8× below its own 512² number, three runs in a row
+  (`outputs/bench_wave73.json`, `bench_wave73b.json`), unresponsive to a
+  3-pass warmup.
+- Bisect (`outputs/runtime9_dvfs_diag.py` + the B/C series in the wave
+  journal): fresh process → 2.3G fast; after a ≥10s GPU-idle gap → bursts
+  run 2-10× slow; the state SURVIVES further short bursts (B2→B3 both
+  slow); a single moderate burst OR ~0.6s of sustained synced load
+  restores full speed (C1→C2 19→4.6ms; C3 ramp 1580 passes → C4/C5
+  3.4ms); re-degrades after another 13s idle (C7 43.4ms).
+- **Banked instrument law (WSL2 / 4050):** idle ≥ ~10s → short GPU bursts
+  measure 2-10× slow regardless of runtime; short bursts do NOT reliably
+  ramp it back; sustained synced load (~0.6s) does. Every future GPU
+  benchmark on this box ramps ~0.6s before timing — `bench.py` now does
+  exactly that (throwaway-instance ramp; timed computation unchanged:
+  inject → steps flows).
+
+### Verdict: KEEP
+
+- P1 PASS (0.0 at all three sizes). P2 post-fix same-session at 1024²:
+  **cupy 3.099G cells/s vs C-SoA 854.5M = 3.63×** (frozen bar ≥ 2×);
+  512²: 2.83G = 3.15× C-SoA. The pre-fix FAIL runs stay booked above; the
+  instrument fix is the commit between `_wave73b` and `_wave73c` —
+  nothing re-rolled silently, gates never touched.
+- Context: fastest prior 1024² runtime was Mojo-SoA 1,140M (wave-72) →
+  runtime #9 is **2.7× Mojo-SoA** — the new substrate speed record on
+  this box.
+
+### Registered wave-69 check — honesty note
+
+This wave ran `--no-mojo`, so the check evaluated on the C-pair only:
+1.47-1.55 at 1024² → below the 2× bar. The wave-69 PASS was always
+mojo-carried (4.75× at 512²); the C pair has never crossed 2× in any
+recorded session (wave-72: 1.53 at 1024²; wave-73: 1.47-1.55). `bench.py`
+now states the basis explicitly instead of printing a bare FAIL.
+
+Traps banked this wave: (1) the burst-timing law above — it silently
+poisons ANY short GPU measurement after idle; (2) CuPy RawKernel parity
+with a float64-promoting Python oracle needs BOTH `-fmad=false` AND
+double intermediates — float32 kernels diverge at the intermediate
+roundings, and FMA contraction silently skips them.
 
 ## Wave-72: 1024² scale test + four-block interface v2 — measured 2026-10-01
 
