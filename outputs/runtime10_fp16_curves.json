@@ -1,0 +1,125 @@
+{
+  "experiment": "runtime10_fp16_precision_budget",
+  "device": "NVIDIA GeForce RTX 4050 Laptop GPU",
+  "rounding_topology": "every per-cell binary op rounded to half; float32 field store; float64 host checksum",
+  "P1_divergence_curves": [
+    {
+      "dtype": "f64",
+      "size": 512,
+      "curves": [
+        {
+          "T": 16,
+          "checksum": -237.9924774169922,
+          "checksum_ref": -237.9924774169922,
+          "abs_checksum_delta": 0.0,
+          "max_abs_pot_delta": 0.0
+        },
+        {
+          "T": 64,
+          "checksum": -424.1353454589844,
+          "checksum_ref": -424.1353454589844,
+          "abs_checksum_delta": 0.0,
+          "max_abs_pot_delta": 0.0
+        },
+        {
+          "T": 256,
+          "checksum": -424.5564880371094,
+          "checksum_ref": -424.5564880371094,
+          "abs_checksum_delta": 0.0,
+          "max_abs_pot_delta": 0.0
+        },
+        {
+          "T": 1024,
+          "checksum": -424.5564880371094,
+          "checksum_ref": -424.5564880371094,
+          "abs_checksum_delta": 0.0,
+          "max_abs_pot_delta": 0.0
+        }
+      ]
+    },
+    {
+      "dtype": "fp16",
+      "size": 512,
+      "curves": [
+        {
+          "T": 16,
+          "checksum": -238.1061248779297,
+          "checksum_ref": -237.9924774169922,
+          "abs_checksum_delta": 0.1136474609375,
+          "max_abs_pot_delta": 0.003933429718017578
+        },
+        {
+          "T": 64,
+          "checksum": -420.68511962890625,
+          "checksum_ref": -424.1353454589844,
+          "abs_checksum_delta": 3.450225830078125,
+          "max_abs_pot_delta": 0.011639237403869629
+        },
+        {
+          "T": 256,
+          "checksum": -420.80328369140625,
+          "checksum_ref": -424.5564880371094,
+          "abs_checksum_delta": 3.753204345703125,
+          "max_abs_pot_delta": 0.013884365558624268
+        },
+        {
+          "T": 1024,
+          "checksum": -420.80328369140625,
+          "checksum_ref": -424.5564880371094,
+          "abs_checksum_delta": 3.753204345703125,
+          "max_abs_pot_delta": 0.013884365558624268
+        }
+      ]
+    },
+    {
+      "dtype": "bf16",
+      "size": 512,
+      "curves": [
+        {
+          "T": 16,
+          "checksum": -237.1793212890625,
+          "checksum_ref": -237.9924774169922,
+          "abs_checksum_delta": 0.8131561279296875,
+          "max_abs_pot_delta": 0.014211535453796387
+        },
+        {
+          "T": 64,
+          "checksum": -400.2227783203125,
+          "checksum_ref": -424.1353454589844,
+          "abs_checksum_delta": 23.912567138671875,
+          "max_abs_pot_delta": 0.08152484893798828
+        },
+        {
+          "T": 256,
+          "checksum": -400.2305908203125,
+          "checksum_ref": -424.5564880371094,
+          "abs_checksum_delta": 24.325897216796875,
+          "max_abs_pot_delta": 0.08785897493362427
+        },
+        {
+          "T": 1024,
+          "checksum": -400.2305908203125,
+          "checksum_ref": -424.5564880371094,
+          "abs_checksum_delta": 24.325897216796875,
+          "max_abs_pot_delta": 0.08785897493362427
+        }
+      ]
+    }
+  ],
+  "P2_speed": {
+    "f64": {
+      "ramp_s": 0.6,
+      "steps": 50,
+      "wall_s": 0.0181
+    },
+    "fp16": {
+      "ramp_s": 0.6,
+      "steps": 50,
+      "wall_s": 0.0027
+    },
+    "f64_over_fp16": 6.704,
+    "gate_ge_1p4": true
+  },
+  "verdict": "MEASUREMENT-PROBE (P1 curve is the deliverable; verdict deferred by design). P2 PASS \u2014 on FAIL: book, no in-flight tuning (P3 trap clause).",
+  "pre_registered": "docs/RUNTIME10-FP16-PREREG.md"
+}
